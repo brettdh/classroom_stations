@@ -13,17 +13,23 @@ def available_stations(stations, students_per_station):
 
 num_students = 28
 num_stations = 6
-students_per_station = [num_students / num_stations] * num_stations
+students_per_station = [num_students / num_stations + 1] * num_stations
 for i in xrange(num_students - sum(students_per_station)):
     students_per_station[i] += 1
 
-assert sum(students_per_station) == num_students
+teacher_table_count = 4
+teacher_table_order = range(num_students)
+shuffle(teacher_table_order)
+
+assert sum(students_per_station) >= num_students
 
 students = [range(num_stations) for i in xrange(num_students)]
 
 def get_student_choices(student, students, stations, students_per_station):
-    return [station for station in students[student]
-            if len(stations[station]) < students_per_station[station]]
+    choices = [station for station in students[student]
+               if len(stations[station]) < students_per_station[station]]
+    shuffle(choices)
+    return choices
 
 def find_swap_station(student, students, stations, students_per_station):
     for empty_slot, _ in available_stations(stations, students_per_station):
@@ -41,9 +47,12 @@ def find_swap_station(student, students, stations, students_per_station):
     return []
 
 
-for i in xrange(num_stations):
+for i in xrange(num_stations + 1):
     stations = [[] for j in xrange(num_stations)]
-    student_order = range(num_students)
+    teacher_table = teacher_table_order[:teacher_table_count]
+    teacher_table_order = teacher_table_order[teacher_table_count:]
+    
+    student_order = filter(lambda x: x not in teacher_table, range(num_students))
     shuffle(student_order)
     for student in student_order:
         available = get_student_choices(student, students, stations, students_per_station)
@@ -59,4 +68,4 @@ for i in xrange(num_stations):
         stations[choice].append(student)
         students[student].remove(choice)
         
-    print "Round {0}: {1!s}".format(i + 1, stations)
+    print "Round {0}: {1!s}  Teacher: {2!s}".format(i + 1, stations, teacher_table)
